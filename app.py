@@ -16,25 +16,29 @@ CORS(app)
 @app.route('/embedding', methods=['POST'])
 def embedding(): 
     MODEL = "text-embedding-3-small"
+    data = request.json
+    user_input = data.get('text')
 
-# Prompting the user to enter their texts
-# You can use a loop or any method you prefer to collect multiple inputs
-    user_input1 = input("Enter the first text: ")
+    if not user_input:
+        return jsonify({"error": "No text provided"}), 400
 
-
-    # Assuming you want to collect these texts in a list
-    texts = [user_input1]
-
-    # Now, you use these texts to create embeddings
-    res = client.embeddings.create(
-        input=texts,
-        model=MODEL
-    )
-    return res
+    try:
+        # Call the OpenAI API with the user's input text
+        res = client.embeddings.create(
+            input=[user_input],
+            model=MODEL
+        )
+        # Convert the response to a dictionary (assuming `res` has a `.to_dict()` method)
+        res_dict = res.to_dict() if hasattr(res, 'to_dict') else res.json()
+        # Return the API response
+        return jsonify(res_dict)
+    except Exception as e:
+        # If an error occurs, return the error message
+        return jsonify({"error": str(e)}), 500
 
 if __name__ == '__main__':
     app.run(debug=True)
-# Printing the result
+
 
 
 
